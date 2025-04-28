@@ -20,7 +20,7 @@ module.exports = (db) => {
                     created_at: dateUTC.toLocaleString("pt-BR")
                 }
             })
-            res.json({
+            res.status(201).json({
                 message: "API is running",
                 news: formattedNews
             })
