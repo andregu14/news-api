@@ -1,5 +1,7 @@
 const express = require("express")
 const router = express.Router()
+const { formatDistanceToNow } = require("date-fns")
+const { ptBR } = require("date-fns/locale")
 
 
 module.exports = (db) => {
@@ -12,15 +14,17 @@ module.exports = (db) => {
                 return
             }
 
-            // Formata data e hora para o formato local
+            // Calcula o tempo relativo para cada noticia
             const formattedNews = rows.map(news => {
                 const dateUTC = new Date(news.created_at + "Z")
+                const timeAgo = formatDistanceToNow(dateUTC, { addSuffix: true, locale: ptBR })
                 return {
                     ...news,
-                    created_at: dateUTC.toLocaleString("pt-BR")
+                    created_at: timeAgo
                 }
             })
-            res.status(201).json({
+
+            res.status(200).json({
                 message: "API is running",
                 news: formattedNews
             })
@@ -63,12 +67,13 @@ module.exports = (db) => {
             }
             // Verifica se a notícia foi encontrada
             if (row) {
-                // Formata a data/hora
-                const dateUTC = new Date(row.created_at + "Z");
+                // Calcula o tempo relativo para cada noticia
+                const dateUTC = new Date(row.created_at + "Z")
+                const timeAgo = formatDistanceToNow(dateUTC, { addSuffix: true, locale: ptBR })
                 const formattedRow = {
                     ...row,
-                    created_at: dateUTC.toLocaleString("pt-BR")
-                };
+                    created_at: timeAgo
+                }
                 res.json(formattedRow);
             } else {
                 // Notícia não encontrada
