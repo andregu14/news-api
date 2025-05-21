@@ -82,6 +82,41 @@ module.exports = (db) => {
         });
     });
 
+    // Busca uma noticia baseada em uma query
+    router.get("/search/:query", (req, res) => {
+        const searchQuery = req.params.query;
+        const sql = `
+                    SELECT * FROM news 
+                    WHERE LOWER(title) LIKE ? 
+                    OR LOWER(description) LIKE ? 
+                    OR LOWER(department) LIKE ?
+                    ORDER BY created_at DESC
+        `;
+        const searchPattern = `%${searchQuery}%`
+
+        db.all(sql, [searchPattern, searchPattern, searchPattern], (err, rows) => {
+            if (err) {
+                res.status(500).json({ error: err.message })
+                return
+            }
+
+            // Calcula o tempo relativo para cada noticia
+            const formattedNews = rows.map(news => {
+                const dateUTC = new Date(news.created_at + "Z")
+                const timeAgo = formatDistanceToNow(dateUTC, { addSuffix: true, locale: ptBR })
+                return {
+                    ...news,
+                    created_at: timeAgo
+                }
+            })
+
+            res.status(200).json({
+                results: formattedNews,
+                count: formattedNews.lenght
+            })
+        })
+    })
+
     // Atualiza uma noticia baseada no id
     router.put("/:id", (req, res) => {
         // TODO
